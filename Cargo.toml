@@ -1,0 +1,6 @@
+[package]
+name = "itsy-bitsy-data-structures"
+version = "0.1.0"
+authors = ["Julio Olivera <julio.olvr@gmail.com>"]
+
+[dependencies]
