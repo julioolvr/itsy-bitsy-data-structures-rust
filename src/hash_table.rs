@@ -4,7 +4,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::marker::PhantomData;
 use std::fmt::Debug;
 
-pub struct HashTable<K, V>{
+pub struct HashTable<K, V> {
     elements: Vec<Option<V>>,
     key_type: PhantomData<K>,
 }
@@ -26,12 +26,16 @@ impl<K, V> HashTable<K, V> where K: Hash + Debug, V: Clone {
         self.elements[hashed_key] = Some(value);
     }
 
-    pub fn get(&self, key: K) -> &V {
+    pub fn get(&self, key: K) -> Option<&V> {
         let hashed_key = HashTable::<K, V>::hash(&key);
 
-        match self.elements[hashed_key] {
-            Some(ref value) => value,
-            None => panic!("Value not set for key {:?}", key),
+        if hashed_key < self.elements.len() {
+            match self.elements[hashed_key] {
+                Some(ref value) => Some(value),
+                None => None
+            }
+        } else {
+            None
         }
     }
 
@@ -63,22 +67,21 @@ mod tests {
         let key = 42;
         let value = "Arthur Dent";
         hash_table.set(key, value);
-        assert_eq!(value, *hash_table.get(key));
+        assert_eq!(value, *hash_table.get(key).expect("Element not found"));
     }
 
     #[test]
-    #[should_panic]
-    fn panics_if_getting_non_set_element() {
+    fn gets_none_if_getting_non_set_element() {
         let hash_table = HashTable::<i32, &str>::new();
-        hash_table.get(42);
+        assert!(hash_table.get(42).is_none());
     }
 
     #[test]
-    #[should_panic]
     fn removes_an_element() {
         let mut hash_table = HashTable::new();
-        hash_table.set(42, "Arthur Dent");
-        hash_table.remove(42);
-        hash_table.get(42);
+        let key = 42;
+        hash_table.set(key, "Arthur Dent");
+        hash_table.remove(key);
+        assert!(hash_table.get(key).is_none());
     }
 }
